@@ -4,10 +4,21 @@ import './ProductList.css'
 import CartItem from './CartItem';
 import { addItem } from './CartSlice';
 function ProductList() {
+    // const baseURL = import.meta.env.BASE_URL
     const [showCart, setShowCart] = useState(false); 
     const [showPlants, setShowPlants] = useState(false); // State to control the visibility of the About Us page
     const [addedToCart, setAddedToCart] = useState({});
     const dispatch = useDispatch();
+
+    const cart = useSelector(state => state.cart.items);
+    const [cartQuantity, setCartQuantity] = useState(0);
+
+    useEffect(() => {
+        const quantity = cart.reduce((total, item) => total + item.quantity, 0);
+        setCartQuantity(quantity);
+    }, [cart]); 
+  
+
     const plantsArray = [
         {
             category: "Air Purifying Plants",
@@ -236,29 +247,29 @@ function ProductList() {
     textDecoration: 'none',
    }
    const handleCartClick = (e) => {
-    e.preventDefault();
-    setShowCart(true); // Set showCart to true when cart icon is clicked
-};
-const handlePlantsClick = (e) => {
-    e.preventDefault();
-    setShowPlants(true); // Set showAboutUs to true when "About Us" link is clicked
-    setShowCart(false); // Hide the cart when navigating to About Us
-};
+     e.preventDefault();
+     setShowCart(true); // Set showCart to true when cart icon is clicked
+   };
+   const handlePlantsClick = (e) => {
+     e.preventDefault();
+     setShowPlants(true); // Set showAboutUs to true when "About Us" link is clicked
+     setShowCart(false); // Hide the cart when navigating to About Us
+   };
 
    const handleContinueShopping = (e) => {
-    e.preventDefault();
-    setShowCart(false);
-  };
+     e.preventDefault();
+     setShowCart(false);
+   };
 
    const handleAddToCart = (product) => {
         dispatch(addItem(product));
-        console.log(product);
+        // console.log(product);
         setAddedToCart((prevState) => ({
             ...prevState,
             [product.name]: true, // Set the product name as key and value as true to indicate it's added to cart
             // [product.value]: true,
         }));
-        console.log(addedToCart);
+        // console.log(addedToCart);
    };
 
     return (
@@ -295,6 +306,7 @@ const handlePlantsClick = (e) => {
                     <circle cx="184" cy="216" r="12"></circle>
                     <path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" id="mainIconPathAttribute" ></path>
                   </svg>
+                  <span className="cart_quantity_count">{cartQuantity}</span>
                 </h1>
               </a>
             </div>
@@ -304,19 +316,30 @@ const handlePlantsClick = (e) => {
           <div className="product-grid">
             {plantsArray.map((category, index) => (
               <div key={index}>
-                <h1>
-                  <div><center>{category.category}</center></div>
-                </h1>
-                <div className="product-list">
-                  {category.plants.map((plant, plantIndex) => (
-                    <div className="product-card" key={plantIndex}>
-                      <img className="product-image" src={plant.image} alt={plant.name} />
-                      <div className="product-title">{plant.name}</div>
-                      {/*Similarly like the above plant.name show other details like description and cost*/}
-                      <button className="product-button" onClick={() => handleAddToCart(plant)} > Add to Cart </button>
-                    </div>
-                  ))}
-                </div>
+                <h1> <div><center>{category.category}</center></div> </h1>
+                
+                  <div className='product-list'>
+                    {category.plants.map((plant, plantIndex) => {
+                      const cartItem = cart.find(item => item.name === plant.name);
+                   
+                      return (
+                        <div className="product-card" key={plantIndex}>
+                            <img className='product-image' src={plant.image} alt={plant.name} />
+
+                            <div className='product-title'>{plant.name}</div>
+                            <div className='product-price'>{plant.cost}</div>
+                            <div className='product-description'>{plant.description}</div>
+
+                            <button 
+                            className={cartItem && cartItem.quantity > 0 ? 'product-button added-to-cart' : 'product-button'} 
+                            onClick={() => handleAddToCart(plant)}>
+                            {cartItem && cartItem.quantity > 0 ? 'Added to Cart' : 'Add to Cart'}
+                            </button>
+                        </div>
+                        ); 
+                      })}
+                  </div>
+
               </div>
             ))}
           </div>
